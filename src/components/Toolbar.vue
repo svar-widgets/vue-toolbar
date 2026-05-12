@@ -12,6 +12,7 @@ const props = defineProps({
 	menuCss: { default: "" },
 	css: { default: "" },
 	overflow: { default: "menu" },
+	layout: { default: "row" },
 	values: { default: null },
 	onclick: { type: Function },
 	onchange: { type: Function },
@@ -29,11 +30,16 @@ function handleChange(ev) {
 }
 
 const div = ref(null);
-let lastToolbarState = -1;
 const menuItems = ref([]);
 
 function processOverflow() {
 	if (props.overflow === "wrap") return;
+
+	const nodes = div.value.children;
+	// restore all items so widths can be measured
+	for (let i = 0; i < items.value.length; i++) {
+		if (nodes[i]) nodes[i].style.display = "";
+	}
 
 	const visibleWidth = div.value.clientWidth;
 	const fullWidth = div.value.scrollWidth;
@@ -41,45 +47,43 @@ function processOverflow() {
 
 	if (needMenu) {
 		if (props.overflow === "collapse") return collapseGroups(visibleWidth);
-		// we need to decide how many nodes need to be
-		const nodes = div.value.children;
-		let sum = 0;
 
+		// pinned items always stay visible
+		let pinnedWidth = 0;
 		for (let i = 0; i < items.value.length; i++) {
+			if (items.value[i].pinned) pinnedWidth += nodes[i].clientWidth;
+		}
+
+		let sum = 0;
+		for (let i = 0; i < items.value.length; i++) {
+			if (items.value[i].pinned) continue;
 			sum += nodes[i].clientWidth;
 			if (items.value[i].comp == "separator") sum += 8;
-			if (sum > visibleWidth - 40) {
-				// skip updates, as visibility state was not changed
-				if (lastToolbarState === i) return;
-				lastToolbarState = i;
-
-				// we need to hide nodes[i] and all next nodes
+			if (sum > visibleWidth - 40 - pinnedWidth) {
+				// we need to hide nodes[i] and all next non-pinned nodes
 				menuItems.value = [];
 				for (let j = i; j < items.value.length; j++) {
+					if (items.value[j].pinned) continue;
 					menuItems.value.push(items.value[j]);
-					nodes[j].style.visibility = "hidden";
+					nodes[j].style.display = "none";
 				}
 				// hide the ending separator
-				if (i > 0 && items.value[i - 1].comp == "separator") {
-					nodes[i - 1].style.visibility = "hidden";
+				if (
+					i > 0 &&
+					items.value[i - 1].comp == "separator" &&
+					!items.value[i - 1].pinned
+				) {
+					nodes[i - 1].style.display = "none";
 				}
 				break;
 			}
-			nodes[i].style.visibility = "";
 		}
 	} else {
 		const freeWidth = visibleWidth - getTotalWidth();
 		if (freeWidth <= 0) return;
 		if (props.overflow === "collapse") return expandGroups(freeWidth);
 
-		if (menuItems.value.length) {
-			lastToolbarState = null;
-			const nodes = div.value.children;
-			for (let i = 0; i < items.value.length; i++) {
-				nodes[i].style.visibility = "";
-			}
-			menuItems.value = [];
-		}
+		if (menuItems.value.length) menuItems.value = [];
 	}
 }
 
@@ -88,7 +92,7 @@ function getTotalWidth() {
 	let sum = 0;
 	for (let i = 0; i < items.value.length; i++) {
 		if (items.value[i].comp != "spacer") {
-			sum += nodes[i].clientWidth;
+			sum += nodes[i]?.clientWidth || 0;
 			if (items.value[i].comp == "separator") sum += 8;
 		}
 	}
@@ -97,15 +101,19 @@ function getTotalWidth() {
 
 function collapseGroups() {
 	for (let i = items.value.length - 1; i >= 0; i--) {
+		const it = items.value[i];
 		// close rightmost open group
-		if (items.value[i].items && !items.value[i].collapsed) {
-			items.value[i].collapsed = true;
-			items.value[i].$width = div.value.children[i].offsetWidth;
+		if (it.items && !it.collapsed) {
+			// replace item so Group re-renders; defineModel is not deep reactive
+			const next = items.value.slice();
+			next[i] = {
+				...it,
+				collapsed: true,
+				$width: div.value.children[i].offsetWidth,
+			};
+			items.value = next;
 			// check after dom update, maybe we need to close more
 			nextTick().then(processOverflow);
-
-			// items are not deep reactive, so we need to trigger the update
-			items.value = [...items.value];
 			return;
 		}
 	}
@@ -113,19 +121,17 @@ function collapseGroups() {
 
 function expandGroups(freeSpace) {
 	for (let i = 0; i < items.value.length; i++) {
-		// close leftmost closed group, that was closed previously
-		if (items.value[i].collapsed && items.value[i].$width) {
+		const it = items.value[i];
+		// open leftmost closed group, that was closed previously
+		if (it.collapsed && it.$width) {
 			// check if group can fit in free space
-			if (
-				items.value[i].$width - div.value.children[i].offsetWidth <
-				freeSpace + 10
-			) {
-				items.value[i].collapsed = false;
+			if (it.$width - div.value.children[i].offsetWidth < freeSpace + 10) {
+				const next = items.value.slice();
+				next[i] = { ...it, collapsed: false };
+				items.value = next;
 				// check after dom update, maybe we can open one more
 				nextTick().then(processOverflow);
 			}
-
-			items.value = [...items.value];
 			return;
 		}
 	}
@@ -157,7 +163,15 @@ const visibleItems = computed(() => normalize(items.value));
 
 <template>
 	<div
-		:class="['wx-toolbar', css, { 'wx-wrap': overflow === 'wrap' }]"
+		:class="[
+			'wx-toolbar',
+			css,
+			{
+				'wx-wrap': overflow === 'wrap',
+				'wx-column': layout == 'column',
+				'wx-has-menu': menuItems.length,
+			},
+		]"
 		ref="div"
 	>
 		<template v-for="item in visibleItems" :key="item.id">
@@ -195,8 +209,15 @@ const visibleItems = computed(() => normalize(items.value));
 	align-items: stretch;
 	padding: 4px;
 	position: relative;
+	min-height: 48px;
+}
+.wx-toolbar.wx-has-menu {
+	padding-right: 48px;
 }
 .wx-toolbar.wx-wrap {
 	flex-wrap: wrap;
+}
+.wx-column {
+	flex-flow: column;
 }
 </style>

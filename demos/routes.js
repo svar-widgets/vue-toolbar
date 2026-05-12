@@ -1,5 +1,6 @@
 import BasicInit from "./cases/BasicInit.vue";
 import OverflowMenu from "./cases/OverflowMenu.vue";
+import OverflowMenuPinned from "./cases/OverflowMenuPinned.vue";
 import OverflowMenuGroups from "./cases/OverflowMenuGroups.vue";
 import OverflowCollapsed from "./cases/OverflowCollapsed.vue";
 import MultiLine from "./cases/MultiLine.vue";
@@ -23,6 +24,12 @@ export const links = [
 	["/buttons/:skin", "Button types", Buttons, "Buttons"],
 	["/values/:skin", "Binding values", Values, "Values"],
 	["/menu/:skin", "Overflow menu", OverflowMenu, "OverflowMenu"],
+	[
+		"/menu-pinned/:skin",
+		"Overflow menu pinned",
+		OverflowMenuPinned,
+		"OverflowMenuPinned",
+	],
 	["/wrap/:skin", "Overflow wrap", OverflowWrap, "OverflowWrap"],
 	[
 		"/menu-groups/:skin",
