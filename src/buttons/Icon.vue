@@ -5,7 +5,9 @@ import { Button } from "@svar-ui/vue-core";
 
 const props = defineProps({
 	icon: {},
+	title: {},
 	text: {},
+	tooltip: {},
 	css: {},
 	type: {},
 	disabled: {},
@@ -24,8 +26,9 @@ const props = defineProps({
 		:icon="props.icon"
 		:type="props.type"
 		:css="props.css"
-		:title="props.text"
 		:disabled="props.disabled"
+		:title="props.title"
+		:tooltip="props.tooltip"
 		:onclick="props.onclick"
 	/>
 </template>

@@ -5,8 +5,8 @@ import Menu from "./Menu.vue";
 import Group from "./Group.vue";
 import BarComponent from "./BarComponent.vue";
 
-import { uid } from "@svar-ui/lib-dom";
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { normalizeToolbarItems } from "../helpers";
 
 const props = defineProps({
 	menuCss: { default: "" },
@@ -32,76 +32,23 @@ function handleChange(ev) {
 const div = ref(null);
 const menuItems = ref([]);
 
-function processOverflow() {
-	if (props.overflow === "wrap") return;
-
-	const nodes = div.value.children;
-	// restore all items so widths can be measured
-	for (let i = 0; i < items.value.length; i++) {
-		if (nodes[i]) nodes[i].style.display = "";
-	}
-
-	const visibleWidth = div.value.clientWidth;
-	const fullWidth = div.value.scrollWidth;
-	const needMenu = fullWidth > visibleWidth;
-
-	if (needMenu) {
-		if (props.overflow === "collapse") return collapseGroups(visibleWidth);
-
-		// pinned items always stay visible
-		let pinnedWidth = 0;
-		for (let i = 0; i < items.value.length; i++) {
-			if (items.value[i].pinned) pinnedWidth += nodes[i].clientWidth;
-		}
-
-		let sum = 0;
-		for (let i = 0; i < items.value.length; i++) {
-			if (items.value[i].pinned) continue;
-			sum += nodes[i].clientWidth;
-			if (items.value[i].comp == "separator") sum += 8;
-			if (sum > visibleWidth - 40 - pinnedWidth) {
-				// we need to hide nodes[i] and all next non-pinned nodes
-				menuItems.value = [];
-				for (let j = i; j < items.value.length; j++) {
-					if (items.value[j].pinned) continue;
-					menuItems.value.push(items.value[j]);
-					nodes[j].style.display = "none";
-				}
-				// hide the ending separator
-				if (
-					i > 0 &&
-					items.value[i - 1].comp == "separator" &&
-					!items.value[i - 1].pinned
-				) {
-					nodes[i - 1].style.display = "none";
-				}
-				break;
-			}
-		}
-	} else {
-		const freeWidth = visibleWidth - getTotalWidth();
-		if (freeWidth <= 0) return;
-		if (props.overflow === "collapse") return expandGroups(freeWidth);
-
-		if (menuItems.value.length) menuItems.value = [];
-	}
-}
+const barItems = computed(() => normalizeToolbarItems(items.value));
 
 function getTotalWidth() {
 	const nodes = div.value.children;
 	let sum = 0;
-	for (let i = 0; i < items.value.length; i++) {
-		if (items.value[i].comp != "spacer") {
+	for (let i = 0; i < barItems.value.length; i++) {
+		if (barItems.value[i].comp != "spacer") {
 			sum += nodes[i]?.clientWidth || 0;
-			if (items.value[i].comp == "separator") sum += 8;
+			if (barItems.value[i].comp == "separator") sum += 8;
 		}
 	}
 	return sum;
 }
 
 function collapseGroups() {
-	for (let i = items.value.length - 1; i >= 0; i--) {
-		const it = items.value[i];
+	for (let i = barItems.value.length - 1; i >= 0; i--) {
+		const it = barItems.value[i];
 		// close rightmost open group
 		if (it.items && !it.collapsed) {
 			// replace item so Group re-renders; defineModel is not deep reactive
@@ -120,9 +67,9 @@ function collapseGroups() {
 }
 
 function expandGroups(freeSpace) {
-	for (let i = 0; i < items.value.length; i++) {
-		const it = items.value[i];
-		// open leftmost closed group, that was closed previously
+	for (let i = 0; i < barItems.value.length; i++) {
+		const it = barItems.value[i];
+		// open leftmost closed group that was collapsed by overflow
 		if (it.collapsed && it.$width) {
 			// check if group can fit in free space
 			if (it.$width - div.value.children[i].offsetWidth < freeSpace + 10) {
@@ -137,12 +84,59 @@ function expandGroups(freeSpace) {
 	}
 }
 
-// rebuild toolbar items, inject group nodes
-function normalize(items) {
-	items.forEach(item => {
-		if (!item.id) item.id = uid();
-	});
-	return items;
+function processOverflow() {
+	if (props.overflow === "wrap") return;
+
+	const nodes = div.value.children;
+	// restore all items so widths can be measured
+	for (let i = 0; i < barItems.value.length; i++) {
+		if (nodes[i]) nodes[i].style.display = "";
+	}
+
+	const visibleWidth = div.value.clientWidth;
+	const fullWidth = div.value.scrollWidth;
+	const needMenu = fullWidth > visibleWidth;
+
+	if (needMenu) {
+		if (props.overflow === "collapse") return collapseGroups();
+
+		// pinned items always stay visible
+		let pinnedWidth = 0;
+		for (let i = 0; i < barItems.value.length; i++) {
+			if (barItems.value[i].pinned) pinnedWidth += nodes[i].clientWidth;
+		}
+
+		let sum = 0;
+		for (let i = 0; i < barItems.value.length; i++) {
+			if (barItems.value[i].pinned) continue;
+			sum += nodes[i].clientWidth;
+			if (barItems.value[i].comp == "separator") sum += 8;
+			if (sum > visibleWidth - 40 - pinnedWidth) {
+				// we need to hide nodes[i] and all next non-pinned nodes
+				menuItems.value = [];
+				for (let j = i; j < barItems.value.length; j++) {
+					if (barItems.value[j].pinned) continue;
+					menuItems.value.push(barItems.value[j]);
+					nodes[j].style.display = "none";
+				}
+				// hide the ending separator
+				if (
+					i > 0 &&
+					barItems.value[i - 1].comp == "separator" &&
+					!barItems.value[i - 1].pinned
+				) {
+					nodes[i - 1].style.display = "none";
+				}
+				break;
+			}
+		}
+	} else {
+		const freeWidth = visibleWidth - getTotalWidth();
+		if (freeWidth <= 0) return;
+		if (props.overflow === "collapse") return expandGroups(freeWidth);
+
+		if (menuItems.value.length) menuItems.value = [];
+	}
 }
 
 let resizeObserver;
@@ -157,8 +151,6 @@ onBeforeUnmount(() => {
 		resizeObserver.disconnect();
 	}
 });
-
-const visibleItems = computed(() => normalize(items.value));
 </script>
 
 <template>
@@ -174,7 +166,7 @@ const visibleItems = computed(() => normalize(items.value));
 		]"
 		ref="div"
 	>
-		<template v-for="item in visibleItems" :key="item.id">
+		<template v-for="item in barItems" :key="item.id">
 			<Group
 				v-if="item.items"
 				:item="item"

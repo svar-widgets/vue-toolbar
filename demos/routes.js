@@ -10,6 +10,7 @@ import Buttons from "./cases/Buttons.vue";
 import Values from "./cases/Values.vue";
 import Ribbon from "./cases/Ribbon.vue";
 import HeaderMenu from "./cases/HeaderMenu.vue";
+import Tooltips from "./cases/Tooltips.vue";
 
 export const links = [
 	["/base/:skin", "Toolbar basic", BasicInit, "BasicInit"],
@@ -22,6 +23,7 @@ export const links = [
 	],
 	["/ribbon/:skin", "Ribbon", Ribbon, "Ribbon"],
 	["/buttons/:skin", "Button types", Buttons, "Buttons"],
+	["/tooltip/:skin", "Button tooltips", Tooltips, "Tooltips"],
 	["/values/:skin", "Binding values", Values, "Values"],
 	["/menu/:skin", "Overflow menu", OverflowMenu, "OverflowMenu"],
 	[

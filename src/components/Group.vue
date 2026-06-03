@@ -4,6 +4,7 @@ defineOptions({ name: "ToolbarGroup" });
 import { ref } from "vue";
 import BarComponent from "./BarComponent.vue";
 import { Dropdown } from "@svar-ui/vue-core";
+import { collapseSeparators } from "../helpers";
 
 const props = defineProps({
 	item: {},
@@ -60,7 +61,10 @@ const oncancel = () => (collapsedState.value = true);
 		</template>
 		<template v-else>
 			<div class="wx-tb-body">
-				<template v-for="sub in item.items" :key="sub.id">
+				<template
+					v-for="sub in collapseSeparators(item.items)"
+					:key="sub.id"
+				>
 					<Group
 						v-if="sub.items"
 						:item="sub"
