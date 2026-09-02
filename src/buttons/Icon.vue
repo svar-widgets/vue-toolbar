@@ -17,8 +17,13 @@ const props = defineProps({
 </script>
 
 <template>
-	<div v-if="props.menu" class="wx-item" :onclick="props.onclick">
-		<i v-if="props.icon" :class="`${props.icon} ${props.css}`"></i>
+	<div
+		v-if="props.menu"
+		class="wx-item"
+		:class="{ 'wx-text-icon': props.text }"
+		:onclick="props.onclick"
+	>
+		<i :class="`${props.icon || 'wxi-empty'} ${props.css || ''}`"></i>
 		{{ props.text }}
 	</div>
 	<Button
@@ -35,9 +40,11 @@ const props = defineProps({
 
 <style scoped>
 i {
-	margin-right: 8px;
 	font-size: var(--wx-icon-size);
 	color: var(--wx-color-font);
+}
+.wx-text-icon i {
+	margin-right: 8px;
 }
 .wx-item {
 	cursor: pointer;

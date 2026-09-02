@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from "vue";
-import { Toolbar } from "../../src/index";
+import { Toolbar, ButtonList, registerToolbarItem } from "../../src/index";
+import { Segmented } from "@svar-ui/vue-core";
+registerToolbarItem("segmented", Segmented);
+registerToolbarItem("segmented", ButtonList, { menu: true });
 
 const width = ref(270);
 const message = ref("");
@@ -55,7 +58,16 @@ const items = [
 		text: "Edit",
 		title: "Ctrl+E",
 	},
-	{ id: "delete", comp: "button", text: "Delete", handler: onClick },
+	{
+		id: "mode",
+		comp: "segmented",
+		value: "1",
+		options: [
+			{ id: "1", label: "All" },
+			{ id: "2", label: "Active" },
+		],
+		handler: onClick,
+	},
 ];
 </script>
 

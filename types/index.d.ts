@@ -31,7 +31,16 @@ export declare const Toolbar: DefineComponent<{
 	onchange?: (ev: { value: any; item: IToolbarItem }) => void;
 }>;
 
+export declare const ButtonList: DefineComponent<{
+	options?: { id: string | number; label: string }[];
+	value?: string | number;
+	css?: string;
+	disabled?: boolean;
+	onchange?: (ev: { value: string | number }) => void;
+}>;
+
 export declare function registerToolbarItem(
 	type: string,
-	handler: Component<any>
+	handler: Component<any>,
+	config?: { menu?: boolean }
 ): void;

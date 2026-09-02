@@ -33,6 +33,7 @@ const div = ref(null);
 const menuItems = ref([]);
 
 const barItems = computed(() => normalizeToolbarItems(items.value));
+const vertical = computed(() => props.layout === "column");
 
 function getTotalWidth() {
 	const nodes = div.value.children;
@@ -85,7 +86,7 @@ function expandGroups(freeSpace) {
 }
 
 function processOverflow() {
-	if (props.overflow === "wrap") return;
+	if (props.overflow === "wrap" || vertical.value) return;
 
 	const nodes = div.value.children;
 	// restore all items so widths can be measured
@@ -160,7 +161,7 @@ onBeforeUnmount(() => {
 			css,
 			{
 				'wx-wrap': overflow === 'wrap',
-				'wx-column': layout == 'column',
+				'wx-column': vertical,
 				'wx-has-menu': menuItems.length,
 			},
 		]"
@@ -211,5 +212,9 @@ onBeforeUnmount(() => {
 }
 .wx-column {
 	flex-flow: column;
+	width: auto;
+}
+.wx-column > :deep(.wx-tb-element) {
+	width: 100%;
 }
 </style>

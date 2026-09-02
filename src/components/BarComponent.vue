@@ -13,7 +13,9 @@ const props = defineProps({
 	onchange: { type: Function },
 });
 
-const itemComponent = computed(() => getItemHandler(props.item.comp || "label"));
+const itemComponent = computed(() =>
+	getItemHandler(props.item.comp, { menu: props.menu })
+);
 
 function onClick() {
 	if (props.item.handler) props.item.handler(props.item);
@@ -67,29 +69,15 @@ const text = computed(() =>
 	display: flex;
 }
 .wx-in-menu.wx-tb-element {
-	height: 36px;
 	line-height: 36px;
 	padding: 2px 8px;
 	background-color: var(--wx-background);
 }
-
 .wx-in-menu :deep(button) {
 	width: 100%;
-	background: transparent;
-	text-align: left;
-	padding-left: 0;
-	font-weight: var(--wx-font-weight);
-	font-size: var(--wx-font-size);
 }
 .wx-in-menu :deep(.wx-tb-element) {
 	align-self: stretch;
-}
-.wx-in-menu.wx-tb-element :deep(button:hover) {
-	background: var(--wx-background-alt);
-}
-.wx-in-menu :deep(button i) {
-	margin-right: 4px;
-	font-size: var(--wx-icon-size);
 }
 .wx-in-menu.wx-tb-element:hover {
 	background: var(--wx-background-alt);

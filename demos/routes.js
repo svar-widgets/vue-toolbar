@@ -11,6 +11,7 @@ import Values from "./cases/Values.vue";
 import Ribbon from "./cases/Ribbon.vue";
 import HeaderMenu from "./cases/HeaderMenu.vue";
 import Tooltips from "./cases/Tooltips.vue";
+import VerticalBar from "./cases/VerticalBar.vue";
 
 export const links = [
 	["/base/:skin", "Toolbar basic", BasicInit, "BasicInit"],
@@ -46,4 +47,5 @@ export const links = [
 		"OverflowCollapsed",
 	],
 	["/header/:skin", "Header menu", HeaderMenu, "HeaderMenu"],
+	["/vertical/:skin", "Vertical toolbar", VerticalBar, "VerticalBar"],
 ];
