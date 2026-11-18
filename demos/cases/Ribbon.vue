@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
 import { ref, markRaw } from "vue";
 import { Toolbar, registerToolbarItem } from "../../src/index";

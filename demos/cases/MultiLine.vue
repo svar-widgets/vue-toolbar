@@ -122,7 +122,7 @@ const items = [
 
 <template>
 	<div class="topbar">
-		<Toolbar :items="items" :values="values" :group-popups="true" />
+		<Toolbar :items="items" :values="values" />
 	</div>
 	<div class="demo-status">{{ message }}</div>
 </template>

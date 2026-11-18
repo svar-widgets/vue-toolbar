@@ -1,7 +1,9 @@
 import type { DefineComponent, Component } from "vue";
 
+export type TID = string | number;
+
 export interface IToolbarItem {
-	id?: string | number;
+	id?: TID;
 	comp?: string | Component<any>;
 	icon?: string;
 	css?: string;
@@ -21,26 +23,46 @@ export interface IToolbarItem {
 	[key: string]: any;
 }
 
+export type TToolbarValues = { [key: string]: any };
+
+export interface IToolbarClickEvent {
+	item: IToolbarItem;
+}
+
+export interface IToolbarChangeEvent {
+	value: any;
+	item: IToolbarItem;
+}
+
+export interface IButtonListOption {
+	id: TID;
+	label: string;
+}
+
+export interface IItemConfig {
+	menu?: boolean;
+}
+
 export declare const Toolbar: DefineComponent<{
 	items?: IToolbarItem[];
 	menuCss?: string;
 	css?: string;
-	values?: { [key: string]: any };
+	values?: TToolbarValues;
 	overflow?: "collapse" | "wrap" | "menu";
-	onclick?: (ev: { item: IToolbarItem }) => void;
-	onchange?: (ev: { value: any; item: IToolbarItem }) => void;
+	onclick?: (ev: IToolbarClickEvent) => void;
+	onchange?: (ev: IToolbarChangeEvent) => void;
 }>;
 
 export declare const ButtonList: DefineComponent<{
-	options?: { id: string | number; label: string }[];
-	value?: string | number;
+	options?: IButtonListOption[];
+	value?: TID;
 	css?: string;
 	disabled?: boolean;
-	onchange?: (ev: { value: string | number }) => void;
+	onchange?: (ev: { value: TID }) => void;
 }>;
 
 export declare function registerToolbarItem(
 	type: string,
 	handler: Component<any>,
-	config?: { menu?: boolean }
+	config?: IItemConfig
 ): void;

@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
 import { Toolbar, registerToolbarItem } from "../../src/index";
 import { Tooltip, RichSelect, Slider } from "@svar-ui/vue-core";

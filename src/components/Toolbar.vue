@@ -23,7 +23,7 @@ const items = defineModel("items", { default: () => [] });
 const values = computed(() => props.values);
 
 function handleChange(ev) {
-	if (values.value) {
+	if (values.value && ev.item.key) {
 		values.value[ev.item.key] = ev.value;
 	}
 	props.onchange && props.onchange(ev);

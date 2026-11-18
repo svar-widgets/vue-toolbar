@@ -2,9 +2,9 @@
 import { Button } from "@svar-ui/vue-core";
 
 const props = defineProps({
-	css: {},
+	css: { default: "" },
 	disabled: {},
-	options: {},
+	options: { default: () => [] },
 	onchange: { type: Function },
 });
 
@@ -21,7 +21,7 @@ function onClickHandler(id) {
 		<Button
 			v-for="option in props.options"
 			:key="option.id"
-			:type="value === option.id ? 'primary' : ''"
+			:type="value === option.id ? 'primary' : undefined"
 			:disabled="props.disabled"
 			:text="option.label"
 			:onclick="() => onClickHandler(option.id)"

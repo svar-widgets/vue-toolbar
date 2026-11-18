@@ -15,11 +15,10 @@ const props = defineProps({
 	onchange: { type: Function },
 });
 
-const popup = ref(undefined);
-const div = ref(null);
+const popup = ref(false);
 
 function oncancel() {
-	popup.value = null;
+	popup.value = false;
 }
 function showMenu() {
 	popup.value = true;
@@ -31,7 +30,7 @@ function menuClick(ev) {
 </script>
 
 <template>
-	<div class="wx-menu" :class="css || ''" ref="div" data-id="$menu">
+	<div class="wx-menu" :class="css || ''" data-id="$menu">
 		<Button icon="wxi-dots-h" :onclick="showMenu" />
 		<Dropdown
 			v-if="popup"
